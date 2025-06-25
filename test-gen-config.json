@@ -4,7 +4,8 @@
       "project-name": "dotnet-grandnode",
       "target-branches": [
         "main",
-        "master"
+        "master",
+        "develop"
       ],
       "test-env-docker-stage": "test",
       "build-test-env-docker-stage-script-path": "tool/build-test-env-docker-stage.sh",
