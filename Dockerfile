@@ -1,60 +1,51 @@
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS build-env
+FROM mcr.microsoft.com/dotnet/sdk:3.1 AS test
 
 WORKDIR /app
 
-COPY GrandNode.sln .
-COPY Grand.Domain/Grand.Domain.csproj Grand.Domain/Grand.Domain.csproj
-COPY Grand.Core/Grand.Core.csproj Grand.Core/Grand.Core.csproj
-COPY Grand.Framework/Grand.Framework.csproj Grand.Framework/Grand.Framework.csproj
-COPY Grand.Services/Grand.Services.csproj Grand.Services/Grand.Services.csproj
-COPY Grand.Web/Grand.Web.csproj Grand.Web/Grand.Web.csproj
-COPY Plugins/Grand.Plugin.DiscountRequirements.Standard/Grand.Plugin.DiscountRequirements.Standard.csproj Plugins/Grand.Plugin.DiscountRequirements.Standard/Grand.Plugin.DiscountRequirements.Standard.csproj
-COPY Plugins/Grand.Plugin.ExchangeRate.McExchange/Grand.Plugin.ExchangeRate.McExchange.csproj Plugins/Grand.Plugin.ExchangeRate.McExchange/Grand.Plugin.ExchangeRate.McExchange.csproj
-COPY Plugins/Grand.Plugin.ExternalAuth.Facebook/Grand.Plugin.ExternalAuth.Facebook.csproj Plugins/Grand.Plugin.ExternalAuth.Facebook/Grand.Plugin.ExternalAuth.Facebook.csproj
-COPY Plugins/Grand.Plugin.ExternalAuth.Google/Grand.Plugin.ExternalAuth.Google.csproj Plugins/Grand.Plugin.ExternalAuth.Google/Grand.Plugin.ExternalAuth.Google.csproj
-COPY Plugins/Grand.Plugin.Payments.BrainTree/Grand.Plugin.Payments.BrainTree.csproj Plugins/Grand.Plugin.Payments.BrainTree/Grand.Plugin.Payments.BrainTree.csproj
-COPY Plugins/Grand.Plugin.Payments.CashOnDelivery/Grand.Plugin.Payments.CashOnDelivery.csproj Plugins/Grand.Plugin.Payments.CashOnDelivery/Grand.Plugin.Payments.CashOnDelivery.csproj
-COPY Plugins/Grand.Plugin.Payments.PayPalStandard/Grand.Plugin.Payments.PayPalStandard.csproj Plugins/Grand.Plugin.Payments.PayPalStandard/Grand.Plugin.Payments.PayPalStandard.csproj
-COPY Plugins/Grand.Plugin.Shipping.ByWeight/Grand.Plugin.Shipping.ByWeight.csproj Plugins/Grand.Plugin.Shipping.ByWeight/Grand.Plugin.Shipping.ByWeight.csproj
-COPY Plugins/Grand.Plugin.Shipping.FixedRateShipping/Grand.Plugin.Shipping.FixedRateShipping.csproj Plugins/Grand.Plugin.Shipping.FixedRateShipping/Grand.Plugin.Shipping.FixedRateShipping.csproj
-COPY Plugins/Grand.Plugin.Shipping.ShippingPoint/Grand.Plugin.Shipping.ShippingPoint.csproj Plugins/Grand.Plugin.Shipping.ShippingPoint/Grand.Plugin.Shipping.ShippingPoint.csproj
-COPY Plugins/Grand.Plugin.Tax.CountryStateZip/Grand.Plugin.Tax.CountryStateZip.csproj Plugins/Grand.Plugin.Tax.CountryStateZip/Grand.Plugin.Tax.CountryStateZip.csproj
-COPY Plugins/Grand.Plugin.Tax.FixedRate/Grand.Plugin.Tax.FixedRate.csproj Plugins/Grand.Plugin.Tax.FixedRate/Grand.Plugin.Tax.FixedRate.csproj
-COPY Plugins/Grand.Plugin.Widgets.GoogleAnalytics/Grand.Plugin.Widgets.GoogleAnalytics.csproj Plugins/Grand.Plugin.Widgets.GoogleAnalytics/Grand.Plugin.Widgets.GoogleAnalytics.csproj
-COPY Plugins/Grand.Plugin.Widgets.FacebookPixel/Grand.Plugin.Widgets.FacebookPixel.csproj Plugins/Grand.Plugin.Widgets.FacebookPixel/Grand.Plugin.Widgets.FacebookPixel.csproj
-COPY Plugins/Grand.Plugin.Widgets.Slider/Grand.Plugin.Widgets.Slider.csproj Plugins/Grand.Plugin.Widgets.Slider/Grand.Plugin.Widgets.Slider.csproj
+# Copy solution and project files
+COPY *.sln ./
+COPY Grand.Domain/*.csproj ./Grand.Domain/
+COPY Grand.Core/*.csproj ./Grand.Core/
+COPY Grand.Framework/*.csproj ./Grand.Framework/
+COPY Grand.Services/*.csproj ./Grand.Services/
+COPY Grand.Api/*.csproj ./Grand.Api/
+COPY Grand.Web/*.csproj ./Grand.Web/
 
-# Copy everything else and build
-COPY . ./
-RUN dotnet publish Grand.Web -c Release -o out
-RUN dotnet build Plugins/Grand.Plugin.DiscountRequirements.Standard
-RUN dotnet build Plugins/Grand.Plugin.ExchangeRate.McExchange
-RUN dotnet build Plugins/Grand.Plugin.ExternalAuth.Facebook
-RUN dotnet build Plugins/Grand.Plugin.ExternalAuth.Google
-RUN dotnet build Plugins/Grand.Plugin.Payments.BrainTree
-RUN dotnet build Plugins/Grand.Plugin.Payments.CashOnDelivery
-RUN dotnet build Plugins/Grand.Plugin.Payments.PayPalStandard
-RUN dotnet build Plugins/Grand.Plugin.Shipping.ByWeight
-RUN dotnet build Plugins/Grand.Plugin.Shipping.FixedRateShipping
-RUN dotnet build Plugins/Grand.Plugin.Shipping.ShippingPoint
-RUN dotnet build Plugins/Grand.Plugin.Tax.CountryStateZip
-RUN dotnet build Plugins/Grand.Plugin.Tax.FixedRate
-RUN dotnet build Plugins/Grand.Plugin.Widgets.GoogleAnalytics
-RUN dotnet build Plugins/Grand.Plugin.Widgets.FacebookPixel
-RUN dotnet build Plugins/Grand.Plugin.Widgets.Slider
+# Copy test project files
+COPY Tests/Grand.Core.Tests/*.csproj ./Tests/Grand.Core.Tests/
+COPY Tests/Grand.Services.Tests/*.csproj ./Tests/Grand.Services.Tests/
+COPY Tests/Grand.Api.Tests/*.csproj ./Tests/Grand.Api.Tests/
+COPY Tests/Grand.Plugin.Tests/*.csproj ./Tests/Grand.Plugin.Tests/
 
-# Build runtime image
-FROM mcr.microsoft.com/dotnet/core/aspnet:3.1.0
+# Copy plugin project files
+COPY Plugins/Grand.Plugin.DiscountRequirements.Standard/*.csproj ./Plugins/Grand.Plugin.DiscountRequirements.Standard/
+COPY Plugins/Grand.Plugin.ExchangeRate.McExchange/*.csproj ./Plugins/Grand.Plugin.ExchangeRate.McExchange/
+COPY Plugins/Grand.Plugin.ExternalAuth.Facebook/*.csproj ./Plugins/Grand.Plugin.ExternalAuth.Facebook/
+COPY Plugins/Grand.Plugin.ExternalAuth.Google/*.csproj ./Plugins/Grand.Plugin.ExternalAuth.Google/
+COPY Plugins/Grand.Plugin.Payments.BrainTree/*.csproj ./Plugins/Grand.Plugin.Payments.BrainTree/
+COPY Plugins/Grand.Plugin.Payments.CashOnDelivery/*.csproj ./Plugins/Grand.Plugin.Payments.CashOnDelivery/
+COPY Plugins/Grand.Plugin.Payments.PayPalStandard/*.csproj ./Plugins/Grand.Plugin.Payments.PayPalStandard/
+COPY Plugins/Grand.Plugin.Shipping.ByWeight/*.csproj ./Plugins/Grand.Plugin.Shipping.ByWeight/
+COPY Plugins/Grand.Plugin.Shipping.FixedRateShipping/*.csproj ./Plugins/Grand.Plugin.Shipping.FixedRateShipping/
+COPY Plugins/Grand.Plugin.Shipping.ShippingPoint/*.csproj ./Plugins/Grand.Plugin.Shipping.ShippingPoint/
+COPY Plugins/Grand.Plugin.Tax.CountryStateZip/*.csproj ./Plugins/Grand.Plugin.Tax.CountryStateZip/
+COPY Plugins/Grand.Plugin.Tax.FixedRate/*.csproj ./Plugins/Grand.Plugin.Tax.FixedRate/
+COPY Plugins/Grand.Plugin.Widgets.GoogleAnalytics/*.csproj ./Plugins/Grand.Plugin.Widgets.GoogleAnalytics/
+COPY Plugins/Grand.Plugin.Widgets.FacebookPixel/*.csproj ./Plugins/Grand.Plugin.Widgets.FacebookPixel/
+COPY Plugins/Grand.Plugin.Widgets.Slider/*.csproj ./Plugins/Grand.Plugin.Widgets.Slider/
 
-RUN apt-get update -qq && apt-get -y install libgdiplus libc6-dev
+# Restore dependencies
+RUN dotnet restore
 
+# Copy the rest of the code
+COPY . .
 
-WORKDIR /app
-COPY --from=build-env /app/out/ .
-COPY --from=build-env /app/Grand.Web/Plugins/ ./Plugins/
+# Install ReportGenerator tool
+RUN dotnet tool install -g dotnet-reportgenerator-globaltool
 
-VOLUME /app/App_Data /app/wwwroot /app/Plugins /app/Themes
+# Add dotnet tools to PATH
+ENV PATH="${PATH}:/root/.dotnet/tools"
 
-RUN chmod 755 /app/Rotativa/Linux/wkhtmltopdf
-
-CMD ["dotnet", "Grand.Web.dll"]
+# Run tests with coverage
+#CMD ["dotnet", "test"] 
+CMD ["bash", "-c", "echo GLIBC VERSION && ldd --version && echo GLIBC VERSION CHECK && dotnet test"]
