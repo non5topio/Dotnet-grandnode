@@ -40,8 +40,8 @@ RUN dotnet restore
 # Copy the rest of the code
 COPY . .
 
-# Install ReportGenerator tool
-RUN dotnet tool install -g dotnet-reportgenerator-globaltool
+# Install ReportGenerator tool (compatible version for .NET Core 3.1)
+RUN dotnet tool install -g dotnet-reportgenerator-globaltool --version 4.8.15
 
 # Add dotnet tools to PATH
 ENV PATH="${PATH}:/root/.dotnet/tools"
