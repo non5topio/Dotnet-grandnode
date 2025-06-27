@@ -18,7 +18,7 @@
           "test-file-path": "Tests/Grand.Core.Tests/CommonHelperTests.cs"
         }
       ],
-      "test-command": "dotnet test --collect:'XPlat Code Coverage' --results-directory ./Tests/TestResults && find ./Tests/TestResults -name 'coverage.cobertura.xml' -exec cp {} ./Tests/TestResults/coverage.cobertura.xml \\;",
+      "test-command": "docker run --rm -v $(pwd):/app -w /app dotnet-grandnode:test bash -c 'dotnet test --collect:\"XPlat Code Coverage\" --results-directory ./Tests/TestResults && find ./Tests/TestResults -name \"coverage.cobertura.xml\" -exec cp {} ./Tests/TestResults/coverage.cobertura.xml \\;'",
       "coverage-type": "cobertura",
       "code-coverage-report-path": "Tests/TestResults/coverage.cobertura.xml",
       "desired-coverage": 80,
