@@ -48,4 +48,4 @@ ENV PATH="${PATH}:/root/.dotnet/tools"
 
 # Run tests with coverage
 #CMD ["dotnet", "test"] 
-CMD ["bash", "-c", "echo GLIBC VERSION && ldd --version && echo GLIBC VERSION CHECK && dotnet test"]
+CMD ["bash", "-c", "echo GLIBC VERSION && ldd --version && echo GLIBC VERSION CHECK && dotnet test --collect:'XPlat Code Coverage' --results-directory ./Tests/TestResults && find ./Tests/TestResults -name 'coverage.cobertura.xml' -exec cp {} ./Tests/TestResults/coverage.cobertura.xml \\;"]
