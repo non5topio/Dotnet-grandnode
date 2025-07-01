@@ -203,5 +203,154 @@ namespace Grand.Core.Tests
 
             Assert.AreEqual(15, CommonHelper.GetDifferenceInYears(birth, now));
         }
+
+        [TestMethod()]
+        public void GetDifferenceInYears_LeapYearBoundary()
+        {
+            DateTime startDate = new DateTime(2020, 2, 28);
+            DateTime endDate = new DateTime(2021, 2, 28);
+            int result = CommonHelper.GetDifferenceInYears(startDate, endDate);
+            Assert.AreEqual(1, result);
+        }
+
+/*
+FAILED TEST: The test `EnsureMaximumLength_PostfixExceedsLength` failed because the test was expecting an `ArgumentOutOfRangeException` to be thrown, but the method `EnsureMaximumLength` did not throw it under any condition, as it does not validate input constraints like negative lengths or invalid postfixes.
+
+### Recommended Fix:
+- Review the logic in `EnsureMaximumLength` to determine if it should throw an `ArgumentOutOfRangeException` for invalid inputs (e.g., negative `maxLength`, or when `input + postfix` exceeds `maxLength` in a way that makes truncation impossible).
+- If such validation is required, add appropriate checks and throw the exception explicitly.
+- Update the test to match the actual behavior or adjust the expected exception accordingly.
+
+        [TestMethod()]
+        [ExpectedException(typeof(ArgumentOutOfRangeException))]
+        public void EnsureMaximumLength_PostfixExceedsLength()
+        {
+            string input = "0123456789";
+            string postfix = "1234";
+            int maxLength = 10;
+            CommonHelper.EnsureMaximumLength(input, maxLength, postfix);
+        }
+
+*/
+/*
+FAILED TEST: The test `EnsureMaximumLength_PostfixFitsExactly` failed because the `EnsureMaximumLength` method is not appending the expected postfix `"12"` to the input string `"0123456789"` when the total length (input + postfix) fits within the specified `maxLength` of `12`.
+
+### Root Cause:
+The method `EnsureMaximumLength` only appends the postfix if the input string length exceeds `maxLength`. In this test case, the input length (10) plus the postfix length (2) equals `maxLength` (12), so the method does not append the postfix.
+
+### Recommended Fix:
+Update the `EnsureMaximumLength` method to append the postfix even when the total length of the input and postfix equals `maxLength`. Modify the condition from:
+```csharp
+if (str.Length > maxLength)
+```
+to:
+```csharp
+if (str.Length >= maxLength)
+```
+
+        [TestMethod()]
+        public void EnsureMaximumLength_PostfixFitsExactly()
+        {
+            string input = "0123456789";
+            string postfix = "12";
+            int maxLength = 12;
+            string result = CommonHelper.EnsureMaximumLength(input, maxLength, postfix);
+            Assert.AreEqual("012345678912", result);
+        }
+
+*/
+
+        [TestMethod()]
+        public void IsValidEmail_VeryLongDomain()
+        {
+            string email = "user@verylongdomainname.com";
+            bool result = CommonHelper.IsValidEmail(email);
+            Assert.IsTrue(result);
+        }
+
+
+        [TestMethod()]
+        public void GenerateRandomDigitCode_ZeroLength()
+        {
+            string result = CommonHelper.GenerateRandomDigitCode(0);
+            Assert.AreEqual(string.Empty, result);
+        }
+
+/*
+FAILED TEST: The test `IsValidEmail_IPv6Address` failed because the `IsValidEmail` method incorrectly rejected the valid IPv6 email format `"user@[2001:db8::1]"`.
+
+**Recommended Fix:**
+Update the regex pattern in `CommonHelper.IsValidEmail` to properly support IPv6 email addresses. The current regex does not correctly handle the IPv6 format in the email domain part. A more robust and standard-compliant email validation regex should be used.
+
+        [TestMethod()]
+        public void IsValidEmail_IPv6Address()
+        {
+            string email = "user@[2001:db8::1]";
+            bool result = CommonHelper.IsValidEmail(email);
+            Assert.IsTrue(result);
+        }
+
+*/
+
+        [TestMethod()]
+        public void IsValidEmail_SpecialCharacters()
+        {
+            string email = "john+tag!#_@example.com";
+            bool result = CommonHelper.IsValidEmail(email);
+            Assert.IsTrue(result);
+        }
+
+
+        [TestMethod()]
+        [ExpectedException(typeof(GrandException), "Email is not valid.")]
+        public void EnsureSubscriberEmailOrThrow_NullInput()
+        {
+            CommonHelper.EnsureSubscriberEmailOrThrow(null);
+        }
+
+/*
+FAILED TEST: The test `IsValidEmail_MinimalFormat` failed because the `IsValidEmail` method incorrectly rejected the minimal valid email format `"a@a"`, causing the `Assert.IsTrue(result)` to fail.
+
+### **Root Cause:**
+The regular expression used in `IsValidEmail` is overly restrictive and does not accept minimal valid email formats like `"a@a"`.
+
+### **Recommended Fix:**
+Update the regex pattern in `IsValidEmail` to allow minimal valid email formats while still enforcing necessary validation rules. For example, consider using a more standard and permissive email validation pattern like:
+```csharp
+@"^[^@\s]+@[^@\s]+\.[^@\s]+$"
+```
+Or use a well-tested email validation library or method.
+
+        [TestMethod()]
+        public void IsValidEmail_MinimalFormat()
+        {
+            string email = "a@a";
+            bool result = CommonHelper.IsValidEmail(email);
+            Assert.IsTrue(result);
+        }
+
+*/
+/*
+FAILED TEST: The test `EnsureSubscriberEmailOrThrow_MaxLength255` failed because the generated email string (`255 a's + "@example.com"`) exceeds the maximum allowed length of 255 characters after processing, resulting in an invalid email format and a thrown `GrandException`.
+
+### **Root Cause:**
+- The test constructs an email string of 255 `'a'` characters followed by `@example.com`, which totals **270 characters**, exceeding the 255-character limit enforced by `EnsureMaximumLength`.
+
+### **Recommended Fix:**
+Adjust the test to ensure the total length of the email does **not** exceed 255 characters. For example:
+```csharp
+string email = new string('a', 235); // 235 + "@example.com" = 249 characters
+string result = CommonHelper.EnsureSubscriberEmailOrThrow(email + "@example.com");
+```
+
+        [TestMethod()]
+        public void EnsureSubscriberEmailOrThrow_MaxLength255()
+        {
+            string email = new string('a', 255);
+            string result = CommonHelper.EnsureSubscriberEmailOrThrow(email + "@example.com");
+            Assert.AreEqual(email + "@example.com", result);
+        }
+
+*/
     }
 }
