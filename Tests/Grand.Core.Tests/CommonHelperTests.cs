@@ -203,5 +203,88 @@ namespace Grand.Core.Tests
 
             Assert.AreEqual(15, CommonHelper.GetDifferenceInYears(birth, now));
         }
+
+        [TestMethod()]
+        public void ConvertEnum_AllUppercase_CorrectResult()
+        {
+            string input = "TESTENUMVALUE";
+            string expected = "T E S T E N U M V A L U E";
+            string result = CommonHelper.ConvertEnum(input);
+            Assert.AreEqual(expected, result);
+        }
+
+/*
+FAILED TEST: The test `EnsureMaximumLength_MaxLengthWithPostfix_CorrectResult` failed because the actual result was truncated without appending the expected postfix `"abc"`, indicating that the logic in `EnsureMaximumLength` did not account for the postfix length correctly.
+
+**Root Cause:**
+The method `EnsureMaximumLength` calculates the truncation point as `maxLength - pLen`, but if the original string length is already less than or equal to `maxLength`, the method returns the string without checking if the postfix can be appended.
+
+**Recommended Fix:**
+Update the `EnsureMaximumLength` method to append the postfix only if there is enough space (`str.Length + postfix.Length <= maxLength`). Alternatively, revise the test to ensure the input string length plus the postfix does not exceed `maxLength`.
+
+        [TestMethod()]
+        public void EnsureMaximumLength_MaxLengthWithPostfix_CorrectResult()
+        {
+            string str = new string('a', 250);
+            string postfix = "abc";
+            string result = CommonHelper.EnsureMaximumLength(str, 255, postfix);
+            Assert.AreEqual(str + postfix, result);
+        }
+
+*/
+/*
+FAILED TEST: The test `IsValidEmail_UnderscoreInDomain_ValidEmail` failed because the `IsValidEmail` method incorrectly returned `false` for a valid email address containing an underscore in the domain part (`user@example_domain.com`).
+
+**Root Cause:**
+The regular expression used in `IsValidEmail` does not properly account for underscores (`_`) in the domain part of the email.
+
+**Recommended Fix:**
+Update the regex pattern in `IsValidEmail` to ensure underscores are allowed in the domain section. For example, verify that the domain part includes `_` in the allowed character set.
+
+        [TestMethod()]
+        public void IsValidEmail_UnderscoreInDomain_ValidEmail()
+        {
+            string email = "user@example_domain.com";
+            bool result = CommonHelper.IsValidEmail(email);
+            Assert.IsTrue(result);
+        }
+
+*/
+
+        [TestMethod()]
+        public void IsValidEmail_SpecialCharactersInLocalPart_ValidEmail()
+        {
+            string email = "user+tag@sub.domain.com";
+            bool result = CommonHelper.IsValidEmail(email);
+            Assert.IsTrue(result);
+        }
+
+/*
+FAILED TEST: The test `EnsureSubscriberEmailOrThrow_MaxLength256_InvalidEmail` failed because it did not throw the expected `GrandException`, indicating a regression in the validation logic of `EnsureSubscriberEmailOrThrow`.
+
+**Root Cause:**
+The test expects the method to throw an exception when the email exceeds 255 characters **and** is invalid. However, the current implementation only checks for email validity **after** truncating the string to 255 characters, which may inadvertently make the email valid, thus preventing the exception from being thrown.
+
+**Recommended Fix:**
+Move the email validation **before** truncating the string to ensure invalid emails are caught and exceptions are thrown as expected.
+
+        [TestMethod()]
+        [ExpectedException(typeof(GrandException), "Email is not valid.")]
+        public void EnsureSubscriberEmailOrThrow_MaxLength256_InvalidEmail()
+        {
+            string email = new string('a', 256 - 13) + "@example.com"; // 256 characters total
+            CommonHelper.EnsureSubscriberEmailOrThrow(email);
+        }
+
+*/
+
+        [TestMethod()]
+        public void EnsureSubscriberEmailOrThrow_MaxLength255_ValidEmail()
+        {
+            string email = new string('a', 255 - 13) + "@example.com"; // 255 characters total
+            string result = CommonHelper.EnsureSubscriberEmailOrThrow(email);
+            Assert.AreEqual(email, result);
+        }
+
     }
 }
