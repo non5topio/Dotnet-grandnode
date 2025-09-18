@@ -203,5 +203,77 @@ namespace Grand.Core.Tests
 
             Assert.AreEqual(15, CommonHelper.GetDifferenceInYears(birth, now));
         }
+
+        [TestMethod()]
+        public void ArraysEqual_OneNull()
+        {
+            // Arrange
+            int[] nonNullArray = new int[] { 1, 2, 3 };
+        
+            // Act
+            bool result = CommonHelper.ArraysEqual<int>(null, nonNullArray);
+        
+            // Assert
+            Assert.IsFalse(result, "ArraysEqual should return false when one array is null and the other is not.");
+        }
+
+
+        [TestMethod()]
+        public void ArraysEqual_BothNull()
+        {
+            // Act
+            bool result = CommonHelper.ArraysEqual<int>(null, null);
+        
+            // Assert
+            Assert.IsTrue(result, "ArraysEqual should return true when both arrays are null.");
+        }
+
+
+        [TestMethod()]
+        public void EnsureMaximumLength_EmptyString()
+        {
+            // Arrange
+            string input = string.Empty;
+            int maxLength = 5;
+            string postfix = "_x";
+        
+            // Act
+            string result = CommonHelper.EnsureMaximumLength(input, maxLength, postfix);
+        
+            // Assert
+            Assert.AreEqual(string.Empty, result, "Empty input should be returned unchanged.");
+        }
+
+
+        [TestMethod()]
+        public void EnsureMaximumLength_ZeroMaxLength()
+        {
+            // Arrange
+            string input = "any";
+            int maxLength = 0;
+        
+            // Act
+            string result = CommonHelper.EnsureMaximumLength(input, maxLength);
+        
+            // Assert
+            Assert.AreEqual(string.Empty, result, "Result should be an empty string when maxLength is zero.");
+        }
+
+
+        [TestMethod()]
+        public void EnsureMaximumLength_NoPostfixWhenShort()
+        {
+            // Arrange
+            string input = "short";
+            int maxLength = 10;
+            string postfix = "_post";
+        
+            // Act
+            string result = CommonHelper.EnsureMaximumLength(input, maxLength, postfix);
+        
+            // Assert
+            Assert.AreEqual(input, result, "Postfix should not be appended when input length is within the limit.");
+        }
+
     }
 }
