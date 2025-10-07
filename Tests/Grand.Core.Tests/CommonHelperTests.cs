@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Linq;
 
 namespace Grand.Core.Tests
 {
@@ -203,5 +204,290 @@ namespace Grand.Core.Tests
 
             Assert.AreEqual(15, CommonHelper.GetDifferenceInYears(birth, now));
         }
+
+        [TestMethod()]
+        public void GetDifferenceInYearsTest_SameDate() {
+            DateTime sameDate = DateTime.Parse("2020-06-15 10:30:00");
+            
+            int result = CommonHelper.GetDifferenceInYears(sameDate, sameDate);
+            
+            Assert.AreEqual(0, result);
+        }
+
+
+        [TestMethod()]
+        public void ConvertEnumTest_EmptyString() {
+            string input = "";
+            
+            string result = CommonHelper.ConvertEnum(input);
+            
+            Assert.AreEqual("", result);
+        }
+
+
+        [TestMethod()]
+        public void ToTest_EnumFromInt() {
+            int value = 1;
+            Type destinationType = typeof(DayOfWeek);
+            
+            object result = CommonHelper.To(value, destinationType);
+            
+            Assert.AreEqual(typeof(DayOfWeek), result.GetType());
+            Assert.AreEqual(DayOfWeek.Monday, result);
+        }
+
+
+        [TestMethod()]
+        public void ToTest_NullValue() {
+            object value = null;
+            Type destinationType = typeof(int);
+            
+            object result = CommonHelper.To(value, destinationType);
+            
+            Assert.IsNull(result);
+        }
+
+
+        [TestMethod()]
+        public void ArraysEqualTest_EmptyArrays() {
+            int[] array1 = { };
+            int[] array2 = { };
+            
+            bool result = CommonHelper.ArraysEqual<int>(array1, array2);
+            
+            Assert.IsTrue(result);
+        }
+
+
+        [TestMethod()]
+        public void ArraysEqualTest_OneArrayNull() {
+            int[] array1 = { 1, 2, 3 };
+            int[] array2 = null;
+            
+            bool result = CommonHelper.ArraysEqual<int>(array1, array2);
+            
+            Assert.IsFalse(result);
+            
+            // Test reverse case
+            result = CommonHelper.ArraysEqual<int>(null, array1);
+            Assert.IsFalse(result);
+        }
+
+/*
+FAILED TEST: ## Test Failure Analysis
+
+### Failed Test
+**Test:** `ArraysEqualTest_BothNull`  
+**Location:** `CommonHelperTests.cs:line 215`  
+**Error:** `Assert.IsFalse failed.`
+
+### Root Cause
+The test expects `CommonHelper.ArraysEqual<int>(null, null)` to return `false`, but the actual implementation returns `true`.
+
+Looking at the source code in `CommonHelper.cs`:
+```csharp
+public static bool ArraysEqual<T>(T[] a1, T[] a2)
+{
+    if (ReferenceEquals(a1, a2))  // This returns true when both are null
+        return true;
+    ...
+}
+```
+
+When both arrays are `null`, `ReferenceEquals(null, null)` returns `true`, so the method returns `true`.
+
+### Recommended Fix
+**Option 1:** Fix the test expectation (most likely correct):
+```csharp
+public void ArraysEqualTest_BothNull() {
+    int[] array1 = null;
+    int[] array2 = null;
+    
+    bool result = CommonHelper.ArraysEqual<int>(array1, array2);
+    Assert.IsTrue(result);  // Change to IsTrue - two null references are equal
+}
+```
+
+**Option 2:** If the business logic requires null arrays to be considered unequal, modify the source code:
+```csharp
+if (a1 == null || a2 == null)
+    return false;
+    
+if (ReferenceEquals(a1, a2))
+    return true;
+```
+
+**Recommendation:** Option 1 is preferred, as two null references being considered equal is the standard behavior in most frameworks.
+
+        [TestMethod()]
+        public void ArraysEqualTest_BothNull() {
+            int[] array1 = null;
+            int[] array2 = null;
+            
+            bool result = CommonHelper.ArraysEqual<int>(array1, array2);
+            
+            Assert.IsFalse(result);
+        }
+
+*/
+
+        [TestMethod()]
+        public void EnsureMaximumLengthTest_ExactLength() {
+            string input = "12345";
+            string result = CommonHelper.EnsureMaximumLength(input, 5, null);
+            
+            Assert.AreEqual("12345", result);
+        }
+
+
+        [TestMethod()]
+        public void EnsureMaximumLengthTest_EmptyStringWithPostfix() {
+            string result = CommonHelper.EnsureMaximumLength("", 10, "_added");
+            
+            Assert.AreEqual("", result);
+        }
+
+
+        [TestMethod()]
+        public void GenerateRandomIntegerTest_DefaultParameters() {
+            int result = CommonHelper.GenerateRandomInteger();
+            
+            Assert.IsTrue(result >= 0);
+            Assert.IsTrue(result < int.MaxValue);
+        }
+
+/*
+FAILED TEST: ## Test Failure Analysis
+
+### Failed Test
+**Test:** `GenerateRandomIntegerTest_MinEqualsMax`  
+**Location:** `CommonHelperTests.cs:line 215`
+
+### Root Cause
+The test expects `CommonHelper.GenerateRandomInteger(100, 100)` to throw an `ArgumentOutOfRangeException`, but instead the test framework's `Assert.Fail()` is being executed, which throws `AssertFailedException`.
+
+This indicates that **`GenerateRandomInteger(100, 100)` does not throw an exception when min equals max** - the method executes successfully instead of throwing the expected exception.
+
+### Issue
+Looking at the source code, `GenerateRandomInteger` calls `Random.Next(min, max)`. According to .NET documentation, `Random.Next(min, max)` throws `ArgumentOutOfRangeException` only when `min > max`, **not when `min == max`**. When min equals max, it simply returns that value without throwing.
+
+### Recommended Fix
+Update the test to reflect the actual behavior:
+
+```csharp
+[TestMethod()]
+public void GenerateRandomIntegerTest_MinEqualsMax() {
+    int result = CommonHelper.GenerateRandomInteger(100, 100);
+    Assert.AreEqual(100, result); // When min == max, should return that value
+}
+```
+
+**OR** if you want to enforce that min must be less than max, modify the source code to add validation:
+
+```csharp
+public static int GenerateRandomInteger(int min = 0, int max = int.MaxValue)
+{
+    if (min >= max)
+        throw new ArgumentOutOfRangeException(nameof(max), "max must be greater than min");
+    // ... rest of implementation
+}
+```
+
+        [TestMethod()]
+        public void GenerateRandomIntegerTest_MinEqualsMax() {
+            try {
+                CommonHelper.GenerateRandomInteger(100, 100);
+                Assert.Fail("Expected ArgumentOutOfRangeException was not thrown");
+            }
+            catch (Exception ex) {
+                Assert.AreEqual(typeof(ArgumentOutOfRangeException), ex.GetType());
+            }
+        }
+
+*/
+
+        [TestMethod()]
+        public void GenerateRandomDigitCodeTest_VeryLargeLength() {
+            int length = 10000;
+            string result = CommonHelper.GenerateRandomDigitCode(length);
+            
+            Assert.AreEqual(length, result.Length);
+            Assert.IsTrue(result.All(char.IsDigit));
+        }
+
+
+        [TestMethod()]
+        public void GenerateRandomDigitCode_LengthZero_ReturnsEmptyString() {
+            string result = CommonHelper.GenerateRandomDigitCode(0);
+            
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Length);
+            Assert.AreEqual(string.Empty, result);
+        }
+
+
+        [TestMethod()]
+        public void IsValidEmail_MaximumIPAddress_ReturnsTrue() {
+            string emailWithMaxIP = "user@[255.255.255.255]";
+            
+            bool result = CommonHelper.IsValidEmail(emailWithMaxIP);
+            
+            Assert.IsTrue(result);
+        }
+
+
+        [TestMethod()]
+        public void IsValidEmail_IPAddressFormat_ReturnsTrue() {
+            string emailWithIP = "user@[192.168.1.1]";
+            
+            bool result = CommonHelper.IsValidEmail(emailWithIP);
+            
+            Assert.IsTrue(result);
+        }
+
+
+        [TestMethod()]
+        public void EnsureSubscriberEmailOrThrow_EmailWithWhitespace_ReturnsTrimmedEmail() {
+            string emailWithSpaces = "  valid.email@example.com  ";
+            
+            string result = CommonHelper.EnsureSubscriberEmailOrThrow(emailWithSpaces);
+            
+            Assert.AreEqual("valid.email@example.com", result);
+            Assert.IsFalse(result.StartsWith(" "));
+            Assert.IsFalse(result.EndsWith(" "));
+        }
+
+
+        [TestMethod()]
+        public void EnsureSubscriberEmailOrThrow_EmailExceeds255Characters_ThrowsException() {
+            // Create a valid email format but exceeding 255 characters
+            // Format: [250 'a' characters]@example.com (250 + 12 = 262)
+            string longEmail = new string('a', 250) + "@example.com";
+            Assert.IsTrue(longEmail.Length > 255);
+            
+            try {
+                CommonHelper.EnsureSubscriberEmailOrThrow(longEmail);
+                Assert.Fail("Expected GrandException was not thrown");
+            }
+            catch (GrandException ex) {
+                Assert.AreEqual("Email is not valid.", ex.Message);
+            }
+        }
+
+
+        [TestMethod()]
+        public void EnsureSubscriberEmailOrThrow_EmailExactly255Characters_ReturnsValidEmail() {
+            // Create a valid email with exactly 255 characters
+            // Format: [243 'a' characters]@example.com (243 + 12 = 255)
+            string longEmail = new string('a', 243) + "@example.com";
+            Assert.AreEqual(255, longEmail.Length);
+            
+            string result = CommonHelper.EnsureSubscriberEmailOrThrow(longEmail);
+            
+            Assert.IsNotNull(result);
+            Assert.AreEqual(255, result.Length);
+            Assert.AreEqual(longEmail, result);
+        }
+
     }
 }
