@@ -40,12 +40,17 @@ RUN dotnet restore
 # Copy the rest of the code
 COPY . .
 
+# Install code coverage package globally
+RUN dotnet add Tests/Grand.Core.Tests/Grand.Core.Tests.csproj package coverlet.collector
+
 # Install ReportGenerator tool (compatible version for .NET Core 3.1)
 RUN dotnet tool install -g dotnet-reportgenerator-globaltool --version 4.8.15
 
 # Add dotnet tools to PATH
 ENV PATH="${PATH}:/root/.dotnet/tools"
 
-# Run tests with coverage
-#CMD ["dotnet", "test"] 
-CMD ["bash", "-c", "echo GLIBC VERSION && ldd --version && echo GLIBC VERSION CHECK && dotnet test --collect:'XPlat Code Coverage' --results-directory ./Tests/TestResults && find ./Tests/TestResults -name 'coverage.cobertura.xml' -exec cp {} ./Tests/TestResults/coverage.cobertura.xml \\;"]
+# Create TestResults directory
+RUN mkdir -p ./Tests/TestResults
+
+# Run specific CommonHelper tests with coverage
+CMD ["dotnet", "test", "Tests/Grand.Core.Tests/Grand.Core.Tests.csproj", "--collect:XPlat Code Coverage", "--results-directory", "./Tests/TestResults"]
