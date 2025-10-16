@@ -16,7 +16,7 @@
       {
         "source-file-path": "Grand.Core/CommonHelper.cs",
         "test-file-path": "Tests/Grand.Core.Tests/CommonHelperTests.cs",
-        "test-command": "docker run --rm -v $(pwd)/Tests/TestResults:/app/Tests/TestResults grandnode-coverage && find ./Tests/TestResults -name 'coverage.cobertura.xml' -exec cp {} ./Tests/TestResults/coverage.cobertura.xml \\;"
+        "test-command": "dotnet test Tests/Grand.Core.Tests/Grand.Core.Tests.csproj --collect:'XPlat Code Coverage' --results-directory ./Tests/TestResults && find ./Tests/TestResults -name 'coverage.cobertura.xml' -exec cp {} ./Tests/TestResults/coverage.cobertura.xml \\;"
       }
     ],
     "coverage-type": "cobertura",
